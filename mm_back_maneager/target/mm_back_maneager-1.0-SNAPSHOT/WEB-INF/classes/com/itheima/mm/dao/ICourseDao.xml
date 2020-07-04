@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mm.dao.ICourseDao">
+    <sql id="whatever"><where>
+        <if test="queryParams.name != null and queryParams.name!=''">and name like concat("%",#{queryParams.name},"%")</if>
+        <if test="queryParams.status != null">and isShow =#{queryParams.status}</if>
+    </where></sql>
+    <insert id="addCourse">
+        insert into t_course values (null,#{name},null,#{createDate},#{isShow},#{userId},#{orderNo})
+    </insert>
+    <select id="findCount" resultType="Long">
+        select count(*) from t_course <include refid="whatever"></include>
+    </select>
+    <select id="findByCourseDao" resultType="Course">
+        select t_course.id,t_course.name,(select username from t_user where id=t_course.userId) creator,t_course.createDate,t_course.isShow,
+        (select count(*) from t_catalog where courseId=t_course.id) catalogQty,(select count(*) from t_tag where courseId=t_course.id) tagQty,
+        (select count(*) from t_question where courseId=t_course.id) questionQty from t_course <include refid="whatever"></include> limit #{offset},#{pageSize}
+</select>
+    <update id="updateCourse">
+        update  t_course set name=#{name},isShow=#{isShow} where id=#{id}
+    </update>
+    <delete id="deleteCourse">
+          delete  from t_course where id=#{id};
+    </delete>
+    <resultMap id="courseListMap" type="Course">
+        <id property="id" column="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="catalogList" column="id" select="com.itheima.mm.dao.ICatalogDao.findCourseByCatalog2" javaType="List" ofType="Catalog"></collection>
+        <collection property="tagList" column="id" select="com.itheima.mm.dao.ITagDao.findCourseByTag2" javaType="List" ofType="Tag"></collection>
+    </resultMap>
+    <select id="findByStatus" resultMap="courseListMap">
+        select id,name from t_course where isShow=#{status}
+    </select>
+
+</mapper>

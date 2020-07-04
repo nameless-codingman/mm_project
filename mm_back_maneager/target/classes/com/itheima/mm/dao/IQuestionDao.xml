@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mm.dao.IQuestionDao">
+    <select id="findCourseByQuestion" resultType="long">
+        select count(*) from t_question where courseId=#{courseId}
+    </select>
+    <sql id="findCondition">
+        <if test="queryParams !=null">
+            <if test="queryParams.courseId !=null">and courseId=#{queryParams.courseId}</if>
+            <if test="queryParams.difficulty !=null">and difficulty=#{queryParams.difficulty}</if>
+            <if test="queryParams.type !=null">and `type`=#{queryParams.type}</if>
+            <if test="queryParams.keyWord !=null">and keyWord like concat("%",#{queryParams.keyWord},"%")</if>
+        </if>
+
+    </sql>
+    <select id="findCount" resultType="long">
+        select count(*) from t_question where isClassic=0 <include refid="findCondition"></include>
+    </select>
+    <select id="findQuestionList" resultType="com.itheima.mm.pojo.Question">
+        select t_question.id ,t_question.number number ,(select t_course.name from  t_course where t_course.id= t_question.courseId ) courseName,
+        t_question.type type,t_question.subject subject,t_question.createDate createDate,t_question.difficulty difficulty,
+        (select count(*) from tr_member_question where tr_member_question.questionId=t_question.id) usedQty,
+        (select t_user.username from t_user where t_user.id=t_question.userId) creator  from t_question where isClassic=0 <include refid="findCondition"></include>
+        limit #{offset},#{pageSize}
+    </select>
+    <insert id="addQuestion">
+        <selectKey keyProperty="id" keyColumn="id" order="AFTER" resultType="int" >
+            select last_insert_id();
+        </selectKey>
+        insert into t_question values (null,#{number},#{subject},#{type},#{difficulty},#{analysis},
+        #{analysisVideo},#{remark},#{isClassic},#{status},#{reviewStatus},
+        #{createDate},#{userId},#{companyId},#{catalogId},#{courseId})
+    </insert>
+
+</mapper>

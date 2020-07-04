@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mm.dao.ITagDao">
+    <select id="findCourseByTag" resultType="long">
+        select count(*) from t_tag where courseId=#{courseId}
+    </select>
+    <select id="findCourseByTag2" resultType="com.itheima.mm.pojo.Tag">
+        select * from t_tag where courseId=#{courseId}
+    </select>
+    <insert id="addTagList">
+        insert into tr_question_tag  values <foreach collection="TagList" item="tag" separator="," open="(" close=")">
+        #{questionId},#{tag.tagId}
+    </foreach>;
+    </insert>
+</mapper>
